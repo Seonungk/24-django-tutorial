@@ -1,20 +1,15 @@
-# Create your views here.
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from rest_framework.generics import GenericAPIView
-from rest_framework.mixins import (
-    ListModelMixin,
-    DestroyModelMixin,
-    CreateModelMixin,
-)
+from rest_framework.mixins import ListModelMixin, DestroyModelMixin, CreateModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
-from main.models import Study
 from django.contrib.auth import login, authenticate
+from main.models import Study, StudyParticipation
 from main.serializers import (
     StudySerializer,
     LoginSerializer,
     UserSerializer,
+    StudyParticipationSerializer
 )
 from rest_framework import generics
 
@@ -82,6 +77,18 @@ class StudyParticipationListView(
     """
 
     ### assignment3: 이곳에 과제를 작성해주세요
+    permission_classes = [IsAuthenticated]
+    serializer_class = StudyParticipationSerializer
+
+    def get_queryset(self):
+        # 현재 로그인된 사용자의 참여 목록만 조회
+        return StudyParticipation.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        # 요청자가 자신의 스터디만 추가하도록 제한
+        if serializer.validated_data.get('user') != self.request.user:
+            raise PermissionDenied("다른 사용자의 참여를 추가할 권한이 없습니다.")
+        serializer.save(user=self.request.user)
     ### end assignment3
 
 
@@ -94,4 +101,10 @@ class StudyParticipationView(
     """
 
     ### assignment3: 이곳에 과제를 작성해주세요
+    permission_classes = [IsAuthenticated]
+    serializer_class = StudyParticipationSerializer
+
+    def get_queryset(self):
+        # 요청 사용자의 참여 이력만 삭제 가능
+        return StudyParticipation.objects.filter(user=self.request.user)
     ### end assignment3

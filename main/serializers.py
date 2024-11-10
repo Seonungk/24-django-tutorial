@@ -2,6 +2,10 @@ from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 
 from main.models import Study, User
+from django.contrib.auth.hashers import make_password
+from rest_framework import serializers
+
+from main.models import Study, User, StudyParticipation
 
 
 class LoginSerializer(serializers.Serializer):
@@ -27,6 +31,9 @@ class StudyParticipationSerializer(serializers.ModelSerializer):
     """
 
     ### assignment3: 이곳에 과제를 작성해주세요
+    class Meta:
+        model = StudyParticipation
+        fields = ["id", "study", "user"]
     ### end assignment3
 
 
